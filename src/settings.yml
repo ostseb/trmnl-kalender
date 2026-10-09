@@ -34,6 +34,7 @@ oauth_fixed_expiry_ms: ''
 custom_fields:
 - keyname: about_kalender
   field_type: author_bio
+  github_url: https://github.com/ostseb/trmnl-kalender
   name: Om pluginen
   category: calendar,productivity
   learn_more_url: https://docs.trmnl.com/go/private-api/plugin-data
