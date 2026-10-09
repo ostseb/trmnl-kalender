@@ -1,0 +1,63 @@
+---
+strategy: polling
+no_screen_padding: 'no'
+dark_mode: 'no'
+static_data: ''
+polling_verb: get
+framework_version:
+serverless_language:
+refresh_interval_floor:
+polling_url: https://trmnl.com/api/plugin_settings/{{ calendar_plugin_id }}/data
+polling_headers: authorization=bearer {{ api_key }}
+polling_body: ''
+id: 501012
+oauth_enabled: 'false'
+oauth_pkce_enabled: 'no'
+oauth_authorize_url: ''
+oauth_token_url: ''
+oauth_scopes: ''
+oauth_scope_separator: ''
+oauth_refresh_url: ''
+oauth_auth_params: ''
+oauth_token_headers: ''
+oauth_token_site: ''
+oauth_token_params: ''
+oauth_token_request_auth_method: ''
+oauth_body_format: ''
+oauth_token_response_metadata: ''
+oauth_authorization_method: ''
+oauth_refresh_params: ''
+oauth_token_field_name: ''
+oauth_expiry_field_name: ''
+oauth_expiry_strategy: ''
+oauth_fixed_expiry_ms: ''
+custom_fields:
+- keyname: about_kalender
+  field_type: author_bio
+  name: Om pluginen
+  category: calendar,productivity
+  learn_more_url: https://docs.trmnl.com/go/private-api/plugin-data
+  description: |-
+    En kalendervy på svenska som delar upp skärmen i två tydliga delar: allt som händer i dag till vänster och de kommande sju dagarna till höger, grupperat per dag. Perfekt för familjer med delade kalendrar som vill se både dagens schema och veckan som kommer med en snabb blick.
+
+    Dagens händelser visas med tid, plats och vilken kalender de kommer från, och sådant som redan är avklarat grånas ut. Heldagshändelser som pågår över flera dagar, som ett lov eller en resa, syns varje dag de pågår. Den kommande veckan visas kompakt med tid och rubrik per dag, och antalet dagar framåt går att ändra.
+
+    Pluginen läser händelserna från TRMNL:s inbyggda kalenderintegration (Google, Apple/iCloud, Outlook, CalDAV eller ICS), så delade kalendrar, återkommande händelser och dubbletter hanteras av TRMNL. Lägg till din vanliga kalender-plugin, ange dess ID och en API-nyckel, så är du igång. Skriv demo som API-nyckel för att se exempeldata. Fungerar i alla fyra layouter och i mashups.
+
+    Läser händelser från din inbyggda TRMNL-kalender via <a href="https://docs.trmnl.com/go/private-api/plugin-data" class="underline">TRMNL:s plugin-data-API</a>.
+- keyname: calendar_plugin_id
+  field_type: string
+  name: Kalender-pluginens ID
+  description: Lägg först till TRMNL:s vanliga kalender-plugin (Google, Apple, Outlook …) och välj dina kalendrar. ID:t är siffran i adressen när du redigerar den, t.ex. /plugin_settings/12345/edit. Den behöver inte ligga i spellistan.
+  placeholder: '12345'
+- keyname: api_key
+  field_type: password
+  name: API-nyckel
+  description: Konto-API-nyckel med läsbehörighet, skapas under Account → API. Skriv demo för att visa exempeldata.
+- keyname: days_ahead
+  field_type: number
+  name: Dagar framåt
+  default: 7
+name: Kalender – idag och kommande vecka
+description: Dagens händelser och 7 dagar
+refresh_interval: 15

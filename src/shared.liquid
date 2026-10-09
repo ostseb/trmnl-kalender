@@ -1,0 +1,105 @@
+{%- comment -%}
+  Works with the data of TRMNL's native calendar plugins (events[]: summary, date_time, start, end,
+  start_full, end_full, all_day, location, calname). Builds:
+    today_html     – today's events (incl. multi-day all-day events that cover today)
+    upcoming_html  – the next N days, grouped per day
+    upcoming_short – the first three of those day groups (for small layouts)
+    upcoming_next  – only the next day with events (half_horizontal)
+{%- endcomment -%}
+{%- assign cf = trmnl.plugin_settings.custom_fields_values -%}
+{%- assign evs = data.events | default: events -%}
+{%- assign cal_names = data.calendar_names | default: calendar_names -%}
+{%- if cf.api_key == "demo" -%}
+  {%- comment -%} Demo mode for the public recipe preview: sample events relative to today. {%- endcomment -%}
+  {%- assign n = "now" | date: "%s" | plus: trmnl.user.utc_offset -%}
+  {%- assign d0 = n | date: "%Y-%m-%d" -%}{%- assign dm = n | minus: 86400 | date: "%Y-%m-%d" -%}
+  {%- assign d1 = n | plus: 86400 | date: "%Y-%m-%d" -%}{%- assign d2 = n | plus: 172800 | date: "%Y-%m-%d" -%}
+  {%- assign d3 = n | plus: 259200 | date: "%Y-%m-%d" -%}{%- assign d5 = n | plus: 432000 | date: "%Y-%m-%d" -%}
+  {%- capture demo -%}[
+    {"summary":"Höstlov","all_day":true,"date_time":"{{ dm }}","end_full":"{{ d2 }}","start":"","end":"","calname":"skola"},
+    {"summary":"Lämna på förskolan","all_day":false,"date_time":"{{ d0 }}T07:45:00","end_full":"{{ d0 }}T08:15:00","start":"07:45","end":"08:15","calname":"familj"},
+    {"summary":"Lunch med Anna","all_day":false,"date_time":"{{ d0 }}T12:00:00","end_full":"{{ d0 }}T13:00:00","start":"12:00","end":"13:00","location":"Stadsbiblioteket","calname":"jobb"},
+    {"summary":"Fotbollsträning","all_day":false,"date_time":"{{ d0 }}T17:30:00","end_full":"{{ d0 }}T18:30:00","start":"17:30","end":"18:30","location":"Idrottsplatsen","calname":"familj"},
+    {"summary":"Tandläkare","all_day":false,"date_time":"{{ d1 }}T16:00:00","end_full":"{{ d1 }}T17:00:00","start":"16:00","end":"17:00","calname":"familj"},
+    {"summary":"Simskola","all_day":false,"date_time":"{{ d2 }}T10:00:00","end_full":"{{ d2 }}T11:00:00","start":"10:00","end":"11:00","calname":"familj"},
+    {"summary":"Middag hos grannarna och sedan filmkväll med barnen","all_day":false,"date_time":"{{ d2 }}T18:00:00","end_full":"{{ d2 }}T22:00:00","start":"18:00","end":"22:00","calname":"familj"},
+    {"summary":"Fika med mormor","all_day":false,"date_time":"{{ d3 }}T15:00:00","end_full":"{{ d3 }}T16:00:00","start":"15:00","end":"16:00","calname":"familj"},
+    {"summary":"Bilservice","all_day":false,"date_time":"{{ d5 }}T09:00:00","end_full":"{{ d5 }}T10:00:00","start":"09:00","end":"10:00","calname":"jobb"}
+  ]{%- endcapture -%}
+  {%- assign evs = demo | parse_json -%}
+  {%- assign cal_names = '{"familj":"Familj","jobb":"Jobb","skola":"Skola"}' | parse_json -%}
+{%- endif -%}
+{%- assign days_ahead = cf.days_ahead | default: 7 | plus: 0 -%}
+{%- assign now_s = "now" | date: "%s" | plus: trmnl.user.utc_offset -%}
+{%- assign today = now_s | date: "%Y-%m-%d" -%}
+{%- assign now_local = now_s | date: "%Y-%m-%dT%H:%M" -%}
+{%- assign sv_days = "söndag,måndag,tisdag,onsdag,torsdag,fredag,lördag" | split: "," -%}
+{%- assign sv_months = "x,januari,februari,mars,april,maj,juni,juli,augusti,september,oktober,november,december" | split: "," -%}
+{%- assign wd = now_s | date: "%w" | plus: 0 -%}
+{%- assign mo = now_s | date: "%m" | plus: 0 -%}
+{%- assign today_label = now_s | date: "%-d" | prepend: " " | prepend: sv_days[wd] | capitalize | append: " " | append: sv_months[mo] -%}
+
+{%- assign today_count = 0 -%}
+{%- capture today_html -%}
+  {%- for ev in evs -%}
+    {%- assign s_day = ev.date_time | slice: 0, 10 -%}
+    {%- assign e_day = ev.end_full | default: ev.date_time | slice: 0, 10 -%}
+    {%- assign show = false -%}
+    {%- if s_day == today -%}{%- assign show = true -%}
+    {%- elsif ev.all_day and s_day < today and e_day > today -%}{%- assign show = true -%}
+    {%- elsif ev.all_day == false and s_day < today and e_day >= today -%}{%- assign show = true -%}{%- endif -%}
+    {%- if show -%}
+      {%- assign today_count = today_count | plus: 1 -%}
+      {%- assign ended = false -%}
+      {%- assign e_min = ev.end_full | slice: 0, 16 -%}
+      {%- if ev.all_day == false and e_min < now_local -%}{%- assign ended = true -%}{%- endif -%}
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="title{% if ended %} text--gray-50{% endif %}" data-clamp="2">{% if ev.all_day %}Heldag{% else %}{{ ev.start }}–{{ ev.end }}{% endif %} · {{ ev.summary }}</span>
+          {%- assign cal = cal_names[ev.calname] -%}
+          {%- if ev.location != blank or cal != blank -%}
+          <span class="description description--large" data-clamp="1">{{ ev.location }}{% if ev.location != blank and cal != blank %} · {% endif %}{{ cal }}</span>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- assign upcoming_count = 0 -%}
+{%- assign group_count = 0 -%}
+{%- assign upcoming_short = "" -%}
+{%- assign upcoming_next = "" -%}
+{%- capture upcoming_html -%}
+  {%- for k in (1..days_ahead) -%}
+    {%- assign d_s = k | times: 86400 | plus: now_s -%}
+    {%- assign day = d_s | date: "%Y-%m-%d" -%}
+    {%- assign has = false -%}
+    {%- capture rows -%}
+      {%- for ev in evs -%}
+        {%- assign s_day = ev.date_time | slice: 0, 10 -%}
+        {%- if s_day == day -%}
+          {%- assign has = true -%}{%- assign upcoming_count = upcoming_count | plus: 1 -%}
+          <div class="flex flex--row gap--small w--full">
+            <span class="title w--16 shrink-0">{% if ev.all_day %}heldag{% else %}{{ ev.start }}{% endif %}</span>
+            <span class="title grow" data-clamp="2">{{ ev.summary }}</span>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endcapture -%}
+    {%- if has -%}
+      {%- assign dwd = d_s | date: "%w" | plus: 0 -%}
+      {%- capture group -%}
+      <div class="flex flex--col flex--left gap--xsmall w--full mb--2">
+        <span class="title title--large">{% if k == 1 %}I morgon{% else %}{{ sv_days[dwd] | capitalize }}{% endif %} <span class="description description--large">{{ d_s | date: "%-d/%-m" }}</span></span>
+        {{ rows }}
+      </div>
+      {%- endcapture -%}
+      {{ group }}
+      {%- if group_count < 3 -%}{%- assign upcoming_short = upcoming_short | append: group -%}{%- endif -%}
+      {%- if group_count < 1 -%}{%- assign upcoming_next = upcoming_next | append: group -%}{%- endif -%}
+      {%- assign group_count = group_count | plus: 1 -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}

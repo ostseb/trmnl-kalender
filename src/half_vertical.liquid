@@ -1,0 +1,11 @@
+<div class="layout layout--col layout--top layout--stretch-x gap--small">
+  <span class="label label--filled label--large self--start">Idag · {{ today_label }}</span>
+  <div class="flex flex--col gap--xsmall w--full" data-overflow="true" data-overflow-max-height="180" data-overflow-counter="true">
+    {%- if today_count == 0 -%}<span class="description">Inget inbokat</span>{%- else -%}{{ today_html }}{%- endif -%}
+  </div>
+  <div class="divider"></div>
+  <div class="flex flex--col w--full">
+    {{ upcoming_short }}
+  </div>
+</div>
+<div class="title_bar"><span class="title">Kalender</span></div>
