@@ -1,11 +1,12 @@
-<div class="layout layout--row layout--top layout--stretch-x gap--large">
-  <div class="flex flex--col flex--left flex--top gap--small h--full grow">
+<div class="layout layout--row layout--top layout--stretch-x gap--large portrait:layout--col">
+  <div class="flex flex--col flex--left flex--top gap--small h--full grow portrait:h--auto portrait:w--full portrait:grow-0">
     <span class="label label--filled label--large">Idag · {{ today_label }}</span>
     <div class="flex flex--col gap--small w--full" data-overflow="true" data-overflow-max-height="360" data-overflow-counter="true">
       {%- if today_count == 0 -%}<span class="title title--small">Inget inbokat idag</span>{%- else -%}{{ today_html }}{%- endif -%}
     </div>
   </div>
-  <div class="flex flex--col flex--left flex--top gap--small h--full border--v-50 pl--4 grow">
+  <div class="divider hidden portrait:block w--full"></div>
+  <div class="flex flex--col flex--left flex--top gap--small h--full grow portrait:h--auto portrait:w--full">
     <span class="label label--underline label--large">Kommande {{ days_ahead }} dagar</span>
     <div class="flex flex--col w--full" data-overflow="true" data-overflow-max-height="360" data-overflow-counter="true">
       {%- if upcoming_count == 0 -%}<span class="description">Inget planerat</span>{%- else -%}{{ upcoming_html }}{%- endif -%}
